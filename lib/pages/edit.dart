@@ -1,12 +1,14 @@
 import 'package:appdevfinal/models/todo.dart';
 import 'package:appdevfinal/pages/add.dart';
 import 'package:appdevfinal/pages/display.dart';
+import 'package:appdevfinal/providers/todo_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 
-class Edit extends StatefulWidget {
+class Edit extends ConsumerStatefulWidget {
   final ToDo todo;
   final String documentId;
 
@@ -17,10 +19,10 @@ class Edit extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<Edit> createState() => _EditState();
+  ConsumerState<Edit> createState() => _EditState();
 }
 
-class _EditState extends State<Edit> {
+class _EditState extends ConsumerState<Edit> {
   final _nameController = TextEditingController();
   final _titleController = TextEditingController();
   final _detailController = TextEditingController();
@@ -111,7 +113,14 @@ class _EditState extends State<Edit> {
                       MaterialStateProperty.all<Color>(Color(0xFFFF7B66)),
                 ),
                 onPressed: () {
-                    _updateData(widget.documentId);
+                                          final newTodo = ToDo(
+          name: _nameController.text,
+          title: _titleController.text,
+          description: _detailController.text,
+          id: ''
+        );
+
+        ref.read(todoNotifierProvider.notifier).updateData(widget.documentId, newTodo);
                     FocusScope.of(context).unfocus();
                 },
                 child: const Text(

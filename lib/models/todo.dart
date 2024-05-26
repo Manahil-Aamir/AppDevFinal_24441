@@ -22,4 +22,12 @@ class ToDo{
         id: doc.id
         );
   }
+
+    Map<String, dynamic> toMap() {
+    return {
+      'name': name,
+      'title': title,
+      'description': description,
+    };
+  }
 }

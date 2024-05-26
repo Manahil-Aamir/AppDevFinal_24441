@@ -1,16 +1,19 @@
+import 'package:appdevfinal/models/todo.dart';
 import 'package:appdevfinal/pages/display.dart';
+import 'package:appdevfinal/providers/todo_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Add extends StatefulWidget {
+class Add extends ConsumerStatefulWidget {
   Add({Key? key}) : super(key: key);
 
   @override
-  State<Add> createState() => _AddState();
+  ConsumerState<Add> createState() => _AddState();
 }
 
-class _AddState extends State<Add> {
+class _AddState extends ConsumerState<Add>{
   final _nameController = TextEditingController();
   final _titleController = TextEditingController();
   final _detailController = TextEditingController();
@@ -25,18 +28,7 @@ class _AddState extends State<Add> {
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> _addData() async {
-    try {
-      await _firestore.collection('todos').add({
-        'name': _nameController.text,
-        'title': _titleController.text,
-        'description': _detailController.text,
-      });
-      print('Data added to Firestore');
-    } catch (error) {
-      print('Error adding data to Firestore: $error');
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +99,14 @@ class _AddState extends State<Add> {
                   ),
                   onPressed: () {
                     if (_formAdd.currentState?.validate() ?? false) {
-                      _addData();
+                      final newTodo = ToDo(
+          name: _nameController.text,
+          title: _titleController.text,
+          description: _detailController.text,
+          id: ''
+        );
+
+        ref.read(todoNotifierProvider.notifier).addData(newTodo);
                       FocusScope.of(context).unfocus();
                     }
                   },

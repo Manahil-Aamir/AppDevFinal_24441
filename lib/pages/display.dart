@@ -2,25 +2,23 @@ import 'package:appdevfinal/methods/google.dart';
 import 'package:appdevfinal/models/todo.dart';
 import 'package:appdevfinal/pages/add.dart';
 import 'package:appdevfinal/pages/edit.dart';
+import 'package:appdevfinal/providers/display_provider.dart';
+import 'package:appdevfinal/providers/todo_provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Display extends StatefulWidget {
+class Display extends ConsumerStatefulWidget {
   const Display({super.key});
 
   @override
-  State<Display> createState() => _DisplayState();
+  ConsumerState<Display> createState() => _DisplayState();
 }
 
-class _DisplayState extends State<Display> {
+class _DisplayState extends ConsumerState<Display> {
   final user = FirebaseAuth.instance.currentUser!;
   final _auth = GoogleSignInProvider();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  void remove(String documentId) {
-    FirebaseFirestore.instance.collection("todos").doc(documentId).delete();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,40 +31,28 @@ class _DisplayState extends State<Display> {
               },
               child: const Text("Logout")),
           Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance
-                      .collection('todos')
-                      .snapshots(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    }
+            child: Consumer(
+              builder: (context, ref, child) {
+                final todosAsyncValue = ref.watch(todosStreamProvider);
 
-                    if (snapshot.hasError) {
-                      return Center(
-                        child: Text('Error: ${snapshot.error}'),
-                      );
-                    }
-
-                    if (snapshot.data == null || snapshot.data!.docs.isEmpty) {
+                return todosAsyncValue.when(
+                  data: (todos) {
+                    if (todos.isEmpty) {
                       return const Center(
                         child: Text('No data found'),
                       );
                     }
+
                     return ListView.builder(
-                      itemCount: snapshot.data!.docs.length,
+                      itemCount: todos.length,
                       itemBuilder: (context, index) {
-                        // Assuming ToDo is a class you have defined to match your Firestore document structure
-                        ToDo toDo =
-                            ToDo.fromQuerySnapshot(snapshot.data!.docs[index]);
-                        // Create a ListTile for each item
+                        ToDo toDo = todos[index];
+
                         return ListTile(
                           title: Row(
                             children: [
                               Text(toDo.title),
-                              Spacer(),
+                              const Spacer(),
                               Text(toDo.name),
                             ],
                           ),
@@ -78,33 +64,47 @@ class _DisplayState extends State<Display> {
                                 color: Colors.white,
                               ),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
                                 children: [
-                                IconButton(
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => Edit(
-                                            todo: toDo, documentId: toDo.id)),
-                                  );
-                                },
-                                icon: Icon(Icons.edit),
+                                  IconButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => Edit(
+                                                todo: toDo,
+                                                documentId: toDo.id)),
+                                      );
+                                    },
+                                    icon: Icon(Icons.edit),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      ref
+                                          .read(todoNotifierProvider.notifier)
+                                          .removeData(toDo.id);
+                                    },
+                                    icon: const Icon(Icons.remove),
+                                  ),
+                                ],
                               ),
-                              IconButton(
-                                onPressed: () {
-                                  remove(toDo.id);
-                                },
-                                icon: Icon(Icons.remove),
-                              ),
-
-                              ],)
                             ],
                           ),
                         );
                       },
                     );
-                  })),
+                  },
+                  loading: () => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                  error: (err, stack) => Center(
+                    child: Text('Error: $err'),
+                  ),
+                );
+              },
+            ),
+          ),
         ],
       ),
       bottomNavigationBar: BottomAppBar(
