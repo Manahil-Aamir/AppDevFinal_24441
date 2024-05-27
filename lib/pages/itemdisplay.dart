@@ -28,7 +28,9 @@ class _ItemDisplayState extends ConsumerState<ItemDisplay> {
         padding: const EdgeInsets.fromLTRB(10, 40, 0, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          
           children: [
+            const SizedBox(height: 40),
             Stack(
               children: <Widget>[
                 Container(
@@ -59,6 +61,7 @@ class _ItemDisplayState extends ConsumerState<ItemDisplay> {
                 ),
               ],
             ),
+            const SizedBox(height: 5.0),
             Consumer(
               builder: (context, ref, child) {
                 final categoriesAsyncValue =
