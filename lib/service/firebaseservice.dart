@@ -5,13 +5,37 @@ class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Fetch todos as a stream
-  Stream<List<ToDo>> getTodos() {
-    return _firestore.collection('todos').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return ToDo.fromQuerySnapshot(doc);
-      }).toList();
-    });
+  Stream<List<ToDo>> getTodos(String category) {
+    return _firestore.collection('todos')
+      .where('category', isEqualTo: category)
+      .snapshots()
+      .map((snapshot) {
+        return snapshot.docs.map((doc) {
+          return ToDo.fromQuerySnapshot(doc);
+        }).toList();
+      });
   }
+
+// Fetch unique categories as a stream
+Stream<List<String>> getCategories() {
+  return _firestore.collection('todos').snapshots().map((snapshot) {
+    // Using a set to ensure unique categories
+    Set<String> categories = {};
+    for (var doc in snapshot.docs) {
+      try {
+        // Parsing the document data safely
+        ToDo todo = ToDo.fromQuerySnapshot(doc);
+        if (todo.category.isNotEmpty) {
+          categories.add(todo.category);
+        }
+      } catch (e) {
+        print('Error parsing todo: $e');
+      }
+    }
+    return categories.toList();
+  });
+}
+
 
   // Add a new todo
   Future<void> addData(ToDo toDo) async {

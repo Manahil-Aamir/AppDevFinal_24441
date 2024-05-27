@@ -7,9 +7,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'display_provider.g.dart';
 
 
-// Stream provider for fetching todos
+// Stream provider for fetching todos by category
 @riverpod
-Stream<List<ToDo>> todosStream(TodosStreamRef ref) {
+Stream<List<ToDo>> todosStream(TodosStreamRef ref, String category) {
   final firestoreService = ref.watch(firestoreServiceProvider);
-  return firestoreService.getTodos();
+  return firestoreService.getTodos(category);
 }

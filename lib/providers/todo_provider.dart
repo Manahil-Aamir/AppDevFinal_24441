@@ -14,16 +14,16 @@ class TodoNotifier extends _$TodoNotifier {
   @override
   List<ToDo> build() {
     _firestoreService = ref.read(firestoreServiceProvider);  // Using ref.read for initial read
-    _fetchTodos();
+    //_fetchTodos();
     return [];
   }
 
   // Fetch todos as a stream and update the state
-  void _fetchTodos() {
-    _firestoreService.getTodos().listen((todos) {
-      state = todos;
-    });
-  }
+  // void _fetchTodos() {
+  //   _firestoreService.getTodos().listen((todos) {
+  //     state = todos;
+  //   });
+  // }
 
   // Add a new todo
   Future<void> addData(ToDo toDo) async {
