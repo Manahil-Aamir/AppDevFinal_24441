@@ -23,6 +23,7 @@ class _ItemDisplayState extends ConsumerState<ItemDisplay> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[200],
       body: Padding(
         padding: const EdgeInsets.fromLTRB(10, 40, 0, 0),
         child: Column(
@@ -81,12 +82,19 @@ class _ItemDisplayState extends ConsumerState<ItemDisplay> {
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor:  category == ref.watch(selectedCategoryProvider) ? MaterialStateProperty.all<Color>(Colors.black) : MaterialStateProperty.all<Color>(Colors.white),
+                              ),
                               onPressed: () {
                                 ref
                                     .read(selectedCategoryProvider.notifier)
                                     .state = category;
                               },
-                              child: Text(category),
+                              child: Text(category,
+                              style: TextStyle(
+                                color: category == ref.watch(selectedCategoryProvider) ? Colors.white : Colors.grey[600]
+                              )),
+                            
                             ),
                           );
                         },
